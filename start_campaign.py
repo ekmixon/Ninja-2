@@ -18,37 +18,37 @@ def initiate_url():
     links=f.read()
     list_full=links.strip().replace("\r","").split("\n")#replace("\0","").replace("\n",",").split(",")
 
-    raw_payload='/'+random.choice(list_full)
+    raw_payload = f'/{random.choice(list_full)}'
     list_full.remove(raw_payload.replace("/",""))
-    b52_payload='/'+random.choice(list_full)
+    b52_payload = f'/{random.choice(list_full)}'
     list_full.remove(b52_payload.replace("/",""))
-    b64_stager='/'+random.choice(list_full)
+    b64_stager = f'/{random.choice(list_full)}'
     list_full.remove(b64_stager.replace("/",""))
-    b52_stager='/'+random.choice(list_full)
+    b52_stager = f'/{random.choice(list_full)}'
     list_full.remove(b52_stager.replace("/",""))
-    hjf_payload='/'+random.choice(list_full)
+    hjf_payload = f'/{random.choice(list_full)}'
     list_full.remove(hjf_payload.replace("/",""))
-    b64_payload='/'+random.choice(list_full)
+    b64_payload = f'/{random.choice(list_full)}'
     list_full.remove(b64_payload.replace("/",""))
-    hjfs_payload='/'+random.choice(list_full)
+    hjfs_payload = f'/{random.choice(list_full)}'
     list_full.remove(hjfs_payload.replace("/",""))
-    sct_payload='/'+random.choice(list_full)
+    sct_payload = f'/{random.choice(list_full)}'
     list_full.remove(sct_payload.replace("/",""))
-    hta_payload='/'+random.choice(list_full)
+    hta_payload = f'/{random.choice(list_full)}'
     list_full.remove(hta_payload.replace("/",""))
-    register_url='/'+random.choice(list_full)
+    register_url = f'/{random.choice(list_full)}'
     list_full.remove(register_url.replace("/",""))
-    download_url='/'+random.choice(list_full)
+    download_url = f'/{random.choice(list_full)}'
     list_full.remove(download_url.replace("/",""))
-    upload_url='/'+random.choice(list_full)
+    upload_url = f'/{random.choice(list_full)}'
     list_full.remove(upload_url.replace("/",""))
-    image_url='/'+random.choice(list_full)
+    image_url = f'/{random.choice(list_full)}'
     list_full.remove(image_url.replace("/",""))
-    command_url='/'+random.choice(list_full)
+    command_url = f'/{random.choice(list_full)}'
     list_full.remove(command_url.replace("/",""))
-    result_url='/'+random.choice(list_full)
+    result_url = f'/{random.choice(list_full)}'
     list_full.remove(result_url.replace("/",""))
-    modules_url='/'+random.choice(list_full)
+    modules_url = f'/{random.choice(list_full)}'
     list_full.remove(modules_url.replace("/",""))
 
     #print ("raw_payload="+raw_payload,b52_payload,b64_stager,b52_payload,hjf_payload,b64_payload,hjfs_payload,sct_payload,hta_payload,register_url,download_url,upload_url,image_url,command_url,result_url,modules_url
@@ -60,76 +60,74 @@ def initiate_url():
 def get_ip():
     global IP,PORT
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Enter a DN/IP:port for this campaign ')
     CC = CC.split(':')
     IP = CC[0]
     PORT=CC[1]
-    print ("You chosed IP: "+IP+"and port: "+PORT+"\n")
+    print(f"You chosed IP: {IP}and port: {PORT}" + "\n")
 
 
 def get_beacon():
     global beacon
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Enter the default beacon period ( connect back) for this campaign in seconds ')
     beacon=CC
 
 def update_template():
     global beacon,IP,PORT,Urls,date,Donut
-    template=open("core/config.template","r")
-    config=open("core/config.py","w")
-    data=template.read()
-    data=data.replace('{IP}', IP).replace('{beacon_time}', beacon).replace('{PORT}', PORT).replace('{URL}', Urls).replace('{SSL}', SSL).replace('{CERT}', cert).replace('{KEY}', key).replace('{KDATE}', date).replace('{DONUT}', Donut)
-    config.write(data)
-    config.close()
-    template.close()
+    with open("core/config.template","r") as template:
+        with open("core/config.py","w") as config:
+            data=template.read()
+            data=data.replace('{IP}', IP).replace('{beacon_time}', beacon).replace('{PORT}', PORT).replace('{URL}', Urls).replace('{SSL}', SSL).replace('{CERT}', cert).replace('{KEY}', key).replace('{KDATE}', date).replace('{DONUT}', Donut)
+            config.write(data)
     print ("Everything Done you can run ninja by : python3 Ninja.py")
 
 def log_campaign():
     global beacon,IP,PORT,Urls,date
-    Log="=================================================================================\n"
-    Log+="==========================New Campaign==========================================\n"
+    Log = (
+        "=================================================================================\n"
+        + "==========================New Campaign==========================================\n"
+    )
+
     Log+="Urls for this campaign  :\n"+Urls
     Log+="IP/Domain:Port for this Campaign : \n"+IP+":"+PORT+"\n"
-    Log+="Beacon period for this campaign : "+beacon+"\n\n\n"
-    Log+="kill date for this campaign : "+date+"\n\n\n"
-    file=open("c2-logs.txt","a+")
-    file.write(Log)
-    file.close()
+    Log += f"Beacon period for this campaign : {beacon}" + "\n\n\n"
+    Log += f"kill date for this campaign : {date}" + "\n\n\n"
+    with open("c2-logs.txt","a+") as file:
+        file.write(Log)
 
 def kill_date():
     global date
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('please enter kill date for this campaign ( format dd/MM/yyyy ) ? ')
-        if len(CC.split("/"))>2:
-            try:
-                date = datetime.strptime(CC, '%d/%m/%Y')
-            except:
-                print ("you entered wrong date")
-                CC=''
-                continue
-            date=CC
-            break
-        else:
+        if len(CC.split("/")) <= 2:
             continue
+        try:
+            date = datetime.strptime(CC, '%d/%m/%Y')
+        except:
+            print ("you entered wrong date")
+            CC=''
+            continue
+        date=CC
+        break
 
 def get_ssl():
     global SSL,key,cert
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Do you want to use SSL ? (yes/no) ')
         if CC=="yes":
             SSL="True"
             break
-        if CC=="no":
-            SSL="False"
-            return
-        else:
+        if CC != "no":
             continue
+        SSL="False"
+        return
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Do you want to use default self signed SSL certificate  ? (yes/no) ')
         if CC=="yes":
             cert='ninja.crt'
@@ -140,22 +138,22 @@ def get_ssl():
         else:
             continue
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Enter the full path for certificate ( ex : /root/certificate.crt ) ')
     cert=CC
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Enter the full path for private key ( ex : /root/private.key ) ')
     key=CC
 
 def Disable_Donut():
     global Donut
     CC=''
-    while len(CC) == 0:
+    while not CC:
         CC = input('Do you want to disable donut shellcodes ( this will disable migrate command in the agents ) ? ( yes/no )\nsome users reported issues with donut if you have startup crash then disable it . ')
         CC = CC.split(':')
         Choice = CC[0]
-        if Choice.lower()!="yes" and Choice.lower()!="no":
+        if Choice.lower() not in ["yes", "no"]:
             CC=''
     if Choice.lower()=="yes" :
         Donut='False'

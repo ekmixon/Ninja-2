@@ -7,20 +7,19 @@ def get_encryption(key, iv='0123456789ABCDEF'):
     from Crypto.Cipher import AES
     iv = os.urandom(AES.block_size)
     bkey = base64.b64decode(key)
-    aes = AES.new(bkey, AES.MODE_CBC, iv)
-    return aes
+    return AES.new(bkey, AES.MODE_CBC, iv)
 
 # Decrypt a string from base64 encoding
 
 
 def decrypt(key, data):
-    iv = data[0:16]
+    iv = data[:16]
     aes = get_encryption(key, iv)
     data = aes.decrypt(base64.b64decode(data))
     return data[16:].decode("utf-8")
 
 def decrypt_file(key, data):
-    iv = data[0:16]
+    iv = data[:16]
     aes = get_encryption(key, iv)
     data = aes.decrypt(base64.b64decode(data))
     return data[16:]#.decode("utf-8")
@@ -28,7 +27,7 @@ def decrypt_file(key, data):
 
 
 def decrypt_bytes_gzip(key, data):
-    iv = data[0:16]
+    iv = data[:16]
     aes = get_encryption(key, iv)
     data = aes.decrypt(data)
     import gzip
@@ -41,7 +40,7 @@ def decrypt_bytes_gzip(key, data):
 
 def encrypt(key, data, gzip=False):
     if gzip:
-        print("Gzipping data - pre-zipped len, " + str(len(data)))
+        print(f"Gzipping data - pre-zipped len, {len(data)}")
         import StringIO
         import gzip
         out = StringIO.StringIO()
@@ -61,6 +60,5 @@ def encrypt(key, data, gzip=False):
     return data
 
 def generate_key():
-    key = "".join([random.choice(string.ascii_uppercase) for i in range(32)])
-    Enc = base64.b64encode(bytearray(key, "UTF-8")).decode()
-    return Enc
+    key = "".join([random.choice(string.ascii_uppercase) for _ in range(32)])
+    return base64.b64encode(bytearray(key, "UTF-8")).decode()

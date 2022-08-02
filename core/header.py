@@ -14,5 +14,5 @@ def Banner():
 88       88 88 88       88 88 `"8bbdP"Y8    88          88
                           ,88                 8888      888888
                         888P" 		      """)
-    print ("                                  Version %s" % config.VERSION)
+    print(f"                                  Version {config.VERSION}")
     print ("\nNinja C2 | Stealthy Pwn like a Ninja\n\n")

